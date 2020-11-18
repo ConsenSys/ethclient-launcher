@@ -1,0 +1,8 @@
+[
+  {
+    "prompt-type":"INPUT",
+    "question":"What is the data directory ?",
+    "config-key":"data-path",
+    "is-config-file-location":true
+  }
+]

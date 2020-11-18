@@ -15,12 +15,13 @@
 package net.consensys.ethclient.launcher;
 
 import static de.codeshelf.consoleui.elements.ConfirmChoice.ConfirmationValue.YES;
+import static org.apache.commons.lang3.reflect.FieldUtils.readField;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +30,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
 import de.codeshelf.consoleui.elements.ConfirmChoice.ConfirmationValue;
 import de.codeshelf.consoleui.prompt.CheckboxResult;
@@ -42,8 +42,10 @@ import de.codeshelf.consoleui.prompt.builder.CheckboxPromptBuilder;
 import de.codeshelf.consoleui.prompt.builder.InputValueBuilder;
 import de.codeshelf.consoleui.prompt.builder.ListPromptBuilder;
 import de.codeshelf.consoleui.prompt.builder.PromptBuilder;
+import net.consensys.ethclient.launcher.config.ImmutableLauncherConfig;
 import net.consensys.ethclient.launcher.exception.LauncherException;
 import net.consensys.ethclient.launcher.model.Step;
+import net.consensys.ethclient.launcher.util.IdGenerator;
 import org.fusesource.jansi.AnsiConsole;
 import picocli.CommandLine;
 
@@ -52,30 +54,22 @@ public class LauncherManager {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
 
-  private final String configFileName;
-
-  private final List<Object> commandClass;
+  final ImmutableLauncherConfig launcherConfig;
 
   private String configFileKey;
 
-  private InputStream launcherScriptInputStream;
-
   private final Map<String, String> additionalFlag;
 
-  public LauncherManager(
-      final String configFileName,
-      final InputStream launcherScriptInputStream,
-      final Object... commandClass) {
-    this.configFileName = configFileName;
-    this.launcherScriptInputStream = launcherScriptInputStream;
-    this.commandClass = Arrays.asList(commandClass);
+  public LauncherManager(final ImmutableLauncherConfig launcherConfig) {
+    this.launcherConfig = launcherConfig;
     this.additionalFlag = new HashMap<>();
   }
 
   public File run() throws LauncherException {
     AnsiConsole.systemInstall();
     try {
-      final String script = new String(launcherScriptInputStream.readAllBytes(), Charsets.UTF_8);
+      final String script =
+          new String(launcherConfig.launcherScript().readAllBytes(), StandardCharsets.UTF_8);
       final Map<String, PromtResultItemIF> configuration = new HashMap<>();
       final Step[] steps = MAPPER.readValue(script, Step[].class);
       for (Step stepFound : steps) {
@@ -89,7 +83,8 @@ public class LauncherManager {
 
   private Map<String, PromtResultItemIF> createInput(final Step step) throws LauncherException {
     try {
-      final ConsolePrompt prompt = new ConsolePrompt();
+      final ConsolePrompt prompt =
+          Optional.ofNullable(launcherConfig.customConsolePrompt()).orElse(new ConsolePrompt());
       final PromptBuilder promptBuilder = prompt.getPromptBuilder();
       if (step.isConfigFileLocation()) {
         configFileKey = step.getConfigKey();
@@ -98,7 +93,7 @@ public class LauncherManager {
         case LIST:
           additionalFlag.putAll(step.getAdditionalFlag());
           return processList(prompt, promptBuilder, step);
-        case CHECKBOX:;
+        case CHECKBOX:
           return processCheckbox(prompt, promptBuilder, step);
         case INPUT:
           return processInput(prompt, promptBuilder, step);
@@ -151,8 +146,7 @@ public class LauncherManager {
       final ConsolePrompt prompt, final PromptBuilder promptBuilder, final Step step)
       throws IOException, LauncherException {
     final Map<String, PromtResultItemIF> configuration = new HashMap<>();
-    final String name =
-        Optional.ofNullable(step.getConfigKey()).orElse(Long.toString(System.nanoTime()));
+    final String name = Optional.ofNullable(step.getConfigKey()).orElse(IdGenerator.generateID());
     promptBuilder
         .createConfirmPromp()
         .name(name)
@@ -188,13 +182,12 @@ public class LauncherManager {
 
   private void setDefaultValue(final String key, final InputValueBuilder inputPrompt) {
     try {
-      for (Object o : commandClass) {
+      for (Object o : launcherConfig.commandClasses()) {
         for (Field f : o.getClass().getDeclaredFields()) {
           if (f.isAnnotationPresent(CommandLine.Option.class)) {
             final CommandLine.Option annotation = f.getAnnotation(CommandLine.Option.class);
             if (Arrays.toString(annotation.names()).contains(key)) {
-              f.setAccessible(true);
-              inputPrompt.defaultValue(f.get(o).toString());
+              inputPrompt.defaultValue(readField(f, o, true).toString());
               break;
             }
           }
@@ -244,8 +237,8 @@ public class LauncherManager {
     if (dataDir == null) {
       throw new LauncherException("invalid launcher script : missing config file location");
     }
-    final File file = new File(dataDir + File.separator + configFileName);
-    try (final PrintWriter out = new PrintWriter(file, Charsets.UTF_8)) {
+    final File file = new File(dataDir + File.separator + launcherConfig.configFileName());
+    try (final PrintWriter out = new PrintWriter(file, StandardCharsets.UTF_8)) {
       out.print(config.toString());
     } catch (Exception e) {
       throw new LauncherException(String.format("error creating config file :%s", e.getMessage()));
