@@ -16,10 +16,12 @@ package net.consensys.ethclient.launcher;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.HashSet;
@@ -120,5 +122,61 @@ public class LauncherManagerTest {
             + "rpc-http-port=\"8080\"\n";
 
     assertThat(new String(data, StandardCharsets.UTF_8)).isEqualTo(expectedConfigFile);
+  }
+
+  @Test
+  public void shouldDetectInvalidScript() {
+    final ImmutableLauncherConfig immutableLauncherConfig =
+        ImmutableLauncherConfig.builder()
+            .configFileName("config.toml")
+            .customConsolePrompt(new TestPrompt(new ArrayDeque<>()))
+            .launcherScript(
+                new InputStream() {
+                  @Override
+                  public int read() {
+                    return 0;
+                  }
+
+                  @Override
+                  public byte[] readAllBytes() throws IOException {
+                    return new byte[] {0x00};
+                  }
+                })
+            .build();
+    final LauncherManager launcherManager = new LauncherManager(immutableLauncherConfig);
+    assertThatThrownBy(launcherManager::run).isInstanceOf(LauncherException.class);
+  }
+
+  @Test
+  public void shouldDetectInvalidScriptOptions() {
+    final ImmutableLauncherConfig immutableLauncherConfig =
+        ImmutableLauncherConfig.builder()
+            .configFileName("config.toml")
+            .customConsolePrompt(new TestPrompt(new ArrayDeque<>()))
+            .launcherScript(LauncherManagerTest.class.getResourceAsStream("launcher-invalid.json"))
+            .build();
+    final LauncherManager launcherManager = new LauncherManager(immutableLauncherConfig);
+    assertThatThrownBy(launcherManager::run)
+        .isInstanceOf(LauncherException.class)
+        .hasMessageContaining(
+            "error during launcher creation : invalid default option for rpc-http-apis");
+  }
+
+  @Test
+  public void shouldDetectInvalidConfigFileLocation() {
+    final ArrayDeque mockedResult = new ArrayDeque();
+    mockedResult.offer(Pair.of("data-path", new InputResult("bad")));
+
+    final ImmutableLauncherConfig immutableLauncherConfig =
+        ImmutableLauncherConfig.builder()
+            .configFileName("config.toml")
+            .customConsolePrompt(new TestPrompt(mockedResult))
+            .launcherScript(LauncherManagerTest.class.getResourceAsStream("launcher-simple.json"))
+            .build();
+    final LauncherManager launcherManager = new LauncherManager(immutableLauncherConfig);
+    assertThatThrownBy(launcherManager::run)
+        .isInstanceOf(LauncherException.class)
+        .hasMessageContaining(
+            "error creating config file :bad/config.toml (No such file or directory)");
   }
 }

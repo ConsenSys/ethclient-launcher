@@ -9,6 +9,8 @@ public final class IdGenerator {
 
   private static Optional<String> fixedValue = Optional.empty();
 
+  private IdGenerator() {}
+
   public static String generateID() {
     return fixedValue.orElse(Long.toString(System.nanoTime()));
   }

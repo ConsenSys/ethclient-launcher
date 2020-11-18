@@ -49,7 +49,6 @@ import net.consensys.ethclient.launcher.util.IdGenerator;
 import org.fusesource.jansi.AnsiConsole;
 import picocli.CommandLine;
 
-@SuppressWarnings({"unchecked"})
 public class LauncherManager {
 
   private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -107,6 +106,7 @@ public class LauncherManager {
     }
   }
 
+  @SuppressWarnings("unchecked")
   private Map<String, PromtResultItemIF> processList(
       final ConsolePrompt prompt, final PromptBuilder promptBuilder, final Step step)
       throws LauncherException {
@@ -122,6 +122,7 @@ public class LauncherManager {
     }
   }
 
+  @SuppressWarnings("unchecked")
   private Map<String, PromtResultItemIF> processCheckbox(
       final ConsolePrompt prompt, final PromptBuilder promptBuilder, final Step step)
       throws LauncherException, IOException {
@@ -133,6 +134,7 @@ public class LauncherManager {
     return (Map<String, PromtResultItemIF>) prompt.prompt(promptBuilder.build());
   }
 
+  @SuppressWarnings("unchecked")
   private Map<String, PromtResultItemIF> processInput(
       final ConsolePrompt prompt, final PromptBuilder promptBuilder, final Step step)
       throws IOException {
@@ -167,6 +169,7 @@ public class LauncherManager {
     return configuration;
   }
 
+  @SuppressWarnings("unchecked")
   private List<Object> formatOptions(final Step step) throws LauncherException {
     try {
       final List<String> split = Splitter.on('$').splitToList(step.getAvailableOptions());
