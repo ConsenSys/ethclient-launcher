@@ -20,7 +20,7 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
       - name: Build with Gradle
-        run: ./gradlew assemble
+        run: ./gradlew spotlessCheck assemble
 
   test:
     name: Launch gradle test task
@@ -40,6 +40,28 @@ jobs:
           restore-keys: ${{ runner.os }}-gradle
       - name: Test with Gradle
         run: ./gradlew test
+
+  publish-bintray:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    name: Publish bintray
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - name: Cache Gradle packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: ${{ runner.os }}-gradle
+      - name: Upload
+        env:
+          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}  # Needed to get PR information, if any
+          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+        run: ./gradlew assemble bintrayUpload
 
   sonar:
     name: Sonar
@@ -69,3 +91,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./gradlew build sonarqube --info
+

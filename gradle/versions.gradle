@@ -1,0 +1,14 @@
+dependencyManagement {
+    dependencies {
+        dependency 'com.fasterxml.jackson.core:jackson-databind:2.11.0'
+        dependency 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.11.0'
+        dependency 'info.picocli:picocli:4.5.0'
+        dependency 'org.fusesource.jansi:jansi:1.11'
+        dependency 'de.codeshelf.consoleui:consoleui:0.0.13'
+
+        dependency 'com.google.guava:guava:29.0-jre'
+        dependency 'org.junit.jupiter:junit-jupiter:5.7.0'
+        dependency 'junit:junit:4.13'
+
+    }
+}
