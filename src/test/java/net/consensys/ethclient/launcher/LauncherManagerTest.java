@@ -23,7 +23,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Optional;
@@ -81,6 +83,35 @@ public class LauncherManagerTest {
 
     assertThat(config.getAbsolutePath())
         .isEqualTo(folder.getRoot().getAbsolutePath() + File.separator + CONFIG_FILE_NAME);
+  }
+
+  @Test
+  public void shouldUseConfigFileIfAlreadyCreated()
+      throws LauncherException, IOException, URISyntaxException {
+
+    final ArrayDeque mockedResult = new ArrayDeque();
+    mockedResult.offer(
+        Pair.of("rpc-http-enabled", new ConfirmResult(ConfirmChoice.ConfirmationValue.NO)));
+
+    final String configFilePath =
+        Paths.get(LauncherManagerTest.class.getResource("config-test.toml").toURI())
+            .toAbsolutePath()
+            .toString();
+
+    final ImmutableLauncherConfig immutableLauncherConfig =
+        ImmutableLauncherConfig.builder()
+            .launcherScript(prepareScript("launcher.json", Optional.of(configFilePath)))
+            .addCommandClasses(new CommandClassTest())
+            .customConsolePrompt(new TestPrompt(mockedResult))
+            .build();
+    final LauncherManager launcherManager = new LauncherManager(immutableLauncherConfig);
+
+    final File config = launcherManager.run();
+    final FileInputStream fis = new FileInputStream(config);
+    byte[] data = new byte[(int) config.length()];
+    fis.read(data);
+    fis.close();
+    assertThat(new String(data, StandardCharsets.UTF_8)).doesNotContain("rpc-http-enabled");
   }
 
   @Test
@@ -158,25 +189,41 @@ public class LauncherManagerTest {
     final LauncherManager launcherManager = new LauncherManager(immutableLauncherConfig);
     assertThatThrownBy(launcherManager::run)
         .isInstanceOf(LauncherException.class)
-        .hasMessageContaining(
-            "error during launcher creation : invalid default option for rpc-http-apis");
+        .hasMessageContaining("invalid default option for rpc-http-apis");
+  }
+
+  @Test
+  public void shouldDetectMissingConfigFileLocation() throws IOException {
+    final ArrayDeque mockedResult = new ArrayDeque();
+    mockedResult.offer(Pair.of("data-path", new InputResult(folder.getRoot().getAbsolutePath())));
+
+    final ImmutableLauncherConfig immutableLauncherConfig =
+        ImmutableLauncherConfig.builder()
+            .customConsolePrompt(new TestPrompt(mockedResult))
+            .launcherScript(prepareScript("launcher-missing-config-file.json"))
+            .build();
+    final LauncherManager launcherManager = new LauncherManager(immutableLauncherConfig);
+    assertThatThrownBy(launcherManager::run)
+        .isInstanceOf(LauncherException.class)
+        .hasMessageContaining("config file name is missing");
   }
 
   @Test
   public void shouldDetectInvalidConfigFileLocation() throws IOException {
     final ArrayDeque mockedResult = new ArrayDeque();
-    mockedResult.offer(Pair.of("data-path", new InputResult("bad")));
+    mockedResult.offer(Pair.of("data-path", new InputResult(folder.getRoot().getAbsolutePath())));
 
     final ImmutableLauncherConfig immutableLauncherConfig =
         ImmutableLauncherConfig.builder()
             .customConsolePrompt(new TestPrompt(mockedResult))
-            .launcherScript(prepareScript("launcher-simple.json", Optional.of("bad")))
+            .launcherScript(
+                prepareScript(
+                    "launcher-simple.json", Optional.of("bad" + File.separator + CONFIG_FILE_NAME)))
             .build();
     final LauncherManager launcherManager = new LauncherManager(immutableLauncherConfig);
     assertThatThrownBy(launcherManager::run)
         .isInstanceOf(LauncherException.class)
-        .hasMessageContaining(
-            "error creating config file :bad/config.toml (No such file or directory)");
+        .hasMessageContaining("bad/config.toml (No such file or directory)");
   }
 
   private InputStream prepareScript(final String scriptName) throws IOException {
@@ -187,7 +234,7 @@ public class LauncherManagerTest {
       throws IOException {
     final InputStream resourceAsStream = LauncherManagerTest.class.getResourceAsStream(scriptName);
     final String configFilePath =
-        path.orElse(folder.getRoot().getAbsolutePath()) + File.separator + CONFIG_FILE_NAME;
+        path.orElse(folder.getRoot().getAbsolutePath() + File.separator + CONFIG_FILE_NAME);
     final String script =
         new String(resourceAsStream.readAllBytes()).replace(CONFIG_FILE_NAME, configFilePath);
     return new ByteArrayInputStream(script.getBytes());

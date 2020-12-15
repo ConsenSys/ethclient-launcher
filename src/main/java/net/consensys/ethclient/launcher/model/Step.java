@@ -39,7 +39,7 @@ public class Step {
   private String availableOptions;
 
   @JsonProperty("default-option")
-  private String defaultOption;
+  private String defaultOption = "";
 
   @JsonProperty("sub-questions")
   private List<Step> subQuestions = new ArrayList<>();

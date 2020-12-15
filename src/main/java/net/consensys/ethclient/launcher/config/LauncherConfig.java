@@ -16,6 +16,7 @@ package net.consensys.ethclient.launcher.config;
 
 import java.io.InputStream;
 import java.util.List;
+import javax.annotation.Nullable;
 
 import de.codeshelf.consoleui.prompt.ConsolePrompt;
 import org.immutables.value.Value;
@@ -27,5 +28,6 @@ public interface LauncherConfig {
 
   List<Object> commandClasses();
 
+  @Nullable
   ConsolePrompt customConsolePrompt();
 }

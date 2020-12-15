@@ -39,6 +39,7 @@ import de.codeshelf.consoleui.prompt.ConsolePrompt;
 import de.codeshelf.consoleui.prompt.InputResult;
 import de.codeshelf.consoleui.prompt.ListResult;
 import de.codeshelf.consoleui.prompt.PromtResultItemIF;
+import de.codeshelf.consoleui.prompt.builder.CheckboxItemBuilder;
 import de.codeshelf.consoleui.prompt.builder.CheckboxPromptBuilder;
 import de.codeshelf.consoleui.prompt.builder.InputValueBuilder;
 import de.codeshelf.consoleui.prompt.builder.ListPromptBuilder;
@@ -76,7 +77,7 @@ public class LauncherManager {
       final LauncherScript script = MAPPER.readValue(resource, LauncherScript.class);
 
       if (Strings.isNullOrEmpty(script.getConfigFileName())) {
-        throw new LauncherException("Config file name is missing");
+        throw new LauncherException("config file name is missing");
       }
       configFilePath = script.getConfigFileName();
 
@@ -115,7 +116,7 @@ public class LauncherManager {
           throw new LauncherException("invalid input type");
       }
     } catch (Exception e) {
-      throw new LauncherException("error during launcher creation : " + e.getMessage());
+      throw new LauncherException(e.getMessage());
     }
   }
 
@@ -142,7 +143,15 @@ public class LauncherManager {
     final CheckboxPromptBuilder checkbox = promptBuilder.createCheckboxPrompt();
     checkbox.name(step.getConfigKey()).message(step.getQuestion());
     formatOptions(step)
-        .forEach(value -> checkbox.newItem().text(value.toString().toLowerCase()).add());
+        .forEach(
+            value -> {
+              final CheckboxItemBuilder checkboxItemBuilder = checkbox.newItem();
+              checkboxItemBuilder.text(value.toString().toLowerCase());
+              if (step.getDefaultOption().contains(value.toString())) {
+                checkboxItemBuilder.check();
+              }
+              checkboxItemBuilder.add();
+            });
     checkbox.addPrompt();
     return (Map<String, PromtResultItemIF>) prompt.prompt(promptBuilder.build());
   }

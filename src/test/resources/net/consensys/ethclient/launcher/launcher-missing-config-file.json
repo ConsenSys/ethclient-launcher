@@ -1,0 +1,10 @@
+{
+  "steps": [
+    {
+      "prompt-type": "CHECKBOX",
+      "question": "Select the list of APIs",
+      "config-key": "rpc-http-apis",
+      "available-options": "net.consensys.ethclient.launcher.network.Apis$INVALID"
+    }
+  ]
+}
