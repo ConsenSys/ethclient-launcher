@@ -19,6 +19,66 @@ Ethereum client launcher
 ./gradlew assemble
 ```
 
+### How to use 
+
+#### 1) Create script
+
+There is a sample here : https://github.com/ConsenSys/ethclient-launcher/blob/main/src/test/resources/net/consensys/ethclient/launcher/launcher.json
+
+There are severals kinds of `prompt` :
+
+- LIST 
+
+```
+Which Ethereum network would you like to use ?
+  ❯ mainnet
+    rinkeby
+    ropsten
+    goerli
+```
+
+- CONFIRM
+
+```
+Do you want to enable pruning? (y/N) yes
+```
+
+- INPUT
+
+```
+What is the data directory ? (/besu)
+```
+
+- CHECKBOX
+
+```
+Select the list of APIs to enable on JSON-RPC HTTP service
+❯ ◉ eth
+  ◯ debug
+  ◯ miner
+  ◉ net
+  ◯ perm
+  ◉ web3
+  ◯ admin
+```
+
+### 2) Configure your launcher
+
+```java
+ final ImmutableLauncherConfig launcherConfig = ImmutableLauncherConfig.builder()
+ .launcherScript(BesuCommand.class.getResourceAsStream("launcher.json"))
+ .addCommandClasses(firstPicocliClass, anotherPicocliClass)
+ .build();
+```
+
+### 3) Run your launcher
+
+```java
+final File configFileCreated = new LauncherManager(launcherConfig).run();
+```
+
+Then the config file is create
+
 ## Code Style
 
 We use Google's Java coding conventions for the project. To reformat code, run: 
