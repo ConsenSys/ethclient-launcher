@@ -1,8 +1,10 @@
-[
-  {
-    "prompt-type":"INPUT",
-    "question":"What is the data directory ?",
-    "config-key":"data-path",
-    "is-config-file-location":true
-  }
-]
+{
+  "config-file-name": "config.toml",
+  "steps": [
+    {
+      "prompt-type": "INPUT",
+      "question": "What is the data directory ?",
+      "config-key": "data-path"
+    }
+  ]
+}

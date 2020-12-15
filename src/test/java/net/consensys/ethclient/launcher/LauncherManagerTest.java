@@ -18,6 +18,7 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -25,6 +26,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.HashSet;
+import java.util.Optional;
 
 import de.codeshelf.consoleui.elements.ConfirmChoice;
 import de.codeshelf.consoleui.prompt.CheckboxResult;
@@ -47,6 +49,8 @@ import org.junit.rules.TemporaryFolder;
 @SuppressWarnings({"rawtypes", "unchecked", "ResultOfMethodCallIgnored"})
 public class LauncherManagerTest {
 
+  private static final String CONFIG_FILE_NAME = "config.toml";
+
   private static final String ID = "default";
 
   @Rule public TemporaryFolder folder = new TemporaryFolder();
@@ -67,8 +71,7 @@ public class LauncherManagerTest {
 
     final ImmutableLauncherConfig immutableLauncherConfig =
         ImmutableLauncherConfig.builder()
-            .configFileName("config.toml")
-            .launcherScript(LauncherManagerTest.class.getResourceAsStream("launcher.json"))
+            .launcherScript(prepareScript("launcher.json"))
             .addCommandClasses(new CommandClassTest())
             .customConsolePrompt(new TestPrompt(mockedResult))
             .build();
@@ -77,7 +80,7 @@ public class LauncherManagerTest {
     final File config = launcherManager.run();
 
     assertThat(config.getAbsolutePath())
-        .isEqualTo(folder.getRoot().getAbsolutePath() + File.separator + "config.toml");
+        .isEqualTo(folder.getRoot().getAbsolutePath() + File.separator + CONFIG_FILE_NAME);
   }
 
   @Test
@@ -98,8 +101,7 @@ public class LauncherManagerTest {
 
     final ImmutableLauncherConfig immutableLauncherConfig =
         ImmutableLauncherConfig.builder()
-            .configFileName("config.toml")
-            .launcherScript(LauncherManagerTest.class.getResourceAsStream("launcher.json"))
+            .launcherScript(prepareScript("launcher.json"))
             .addCommandClasses(new CommandClassTest())
             .customConsolePrompt(new TestPrompt(mockedResult))
             .build();
@@ -128,7 +130,6 @@ public class LauncherManagerTest {
   public void shouldDetectInvalidScript() {
     final ImmutableLauncherConfig immutableLauncherConfig =
         ImmutableLauncherConfig.builder()
-            .configFileName("config.toml")
             .customConsolePrompt(new TestPrompt(new ArrayDeque<>()))
             .launcherScript(
                 new InputStream() {
@@ -138,7 +139,7 @@ public class LauncherManagerTest {
                   }
 
                   @Override
-                  public byte[] readAllBytes() throws IOException {
+                  public byte[] readAllBytes() {
                     return new byte[] {0x00};
                   }
                 })
@@ -148,12 +149,11 @@ public class LauncherManagerTest {
   }
 
   @Test
-  public void shouldDetectInvalidScriptOptions() {
+  public void shouldDetectInvalidScriptOptions() throws IOException {
     final ImmutableLauncherConfig immutableLauncherConfig =
         ImmutableLauncherConfig.builder()
-            .configFileName("config.toml")
             .customConsolePrompt(new TestPrompt(new ArrayDeque<>()))
-            .launcherScript(LauncherManagerTest.class.getResourceAsStream("launcher-invalid.json"))
+            .launcherScript(prepareScript("launcher-invalid.json"))
             .build();
     final LauncherManager launcherManager = new LauncherManager(immutableLauncherConfig);
     assertThatThrownBy(launcherManager::run)
@@ -163,20 +163,33 @@ public class LauncherManagerTest {
   }
 
   @Test
-  public void shouldDetectInvalidConfigFileLocation() {
+  public void shouldDetectInvalidConfigFileLocation() throws IOException {
     final ArrayDeque mockedResult = new ArrayDeque();
     mockedResult.offer(Pair.of("data-path", new InputResult("bad")));
 
     final ImmutableLauncherConfig immutableLauncherConfig =
         ImmutableLauncherConfig.builder()
-            .configFileName("config.toml")
             .customConsolePrompt(new TestPrompt(mockedResult))
-            .launcherScript(LauncherManagerTest.class.getResourceAsStream("launcher-simple.json"))
+            .launcherScript(prepareScript("launcher-simple.json", Optional.of("bad")))
             .build();
     final LauncherManager launcherManager = new LauncherManager(immutableLauncherConfig);
     assertThatThrownBy(launcherManager::run)
         .isInstanceOf(LauncherException.class)
         .hasMessageContaining(
             "error creating config file :bad/config.toml (No such file or directory)");
+  }
+
+  private InputStream prepareScript(final String scriptName) throws IOException {
+    return prepareScript(scriptName, Optional.empty());
+  }
+
+  private InputStream prepareScript(final String scriptName, final Optional<String> path)
+      throws IOException {
+    final InputStream resourceAsStream = LauncherManagerTest.class.getResourceAsStream(scriptName);
+    final String configFilePath =
+        path.orElse(folder.getRoot().getAbsolutePath()) + File.separator + CONFIG_FILE_NAME;
+    final String script =
+        new String(resourceAsStream.readAllBytes()).replace(CONFIG_FILE_NAME, configFilePath);
+    return new ByteArrayInputStream(script.getBytes());
   }
 }

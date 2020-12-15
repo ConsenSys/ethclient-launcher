@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import de.codeshelf.consoleui.elements.ConfirmChoice.ConfirmationValue;
 import de.codeshelf.consoleui.prompt.CheckboxResult;
 import de.codeshelf.consoleui.prompt.ConfirmResult;
@@ -44,6 +45,7 @@ import de.codeshelf.consoleui.prompt.builder.ListPromptBuilder;
 import de.codeshelf.consoleui.prompt.builder.PromptBuilder;
 import net.consensys.ethclient.launcher.config.ImmutableLauncherConfig;
 import net.consensys.ethclient.launcher.exception.LauncherException;
+import net.consensys.ethclient.launcher.model.LauncherScript;
 import net.consensys.ethclient.launcher.model.Step;
 import net.consensys.ethclient.launcher.util.IdGenerator;
 import org.fusesource.jansi.AnsiConsole;
@@ -55,7 +57,7 @@ public class LauncherManager {
 
   final ImmutableLauncherConfig launcherConfig;
 
-  private String configFileKey;
+  private String configFilePath;
 
   private final Map<String, String> additionalFlag;
 
@@ -66,12 +68,25 @@ public class LauncherManager {
 
   public File run() throws LauncherException {
     AnsiConsole.systemInstall();
+
     try {
-      final String script =
+      final String resource =
           new String(launcherConfig.launcherScript().readAllBytes(), StandardCharsets.UTF_8);
       final Map<String, PromtResultItemIF> configuration = new HashMap<>();
-      final Step[] steps = MAPPER.readValue(script, Step[].class);
-      for (Step stepFound : steps) {
+      final LauncherScript script = MAPPER.readValue(resource, LauncherScript.class);
+
+      if (Strings.isNullOrEmpty(script.getConfigFileName())) {
+        throw new LauncherException("Config file name is missing");
+      }
+      configFilePath = script.getConfigFileName();
+
+      // config file already exist
+      final File configFile = new File(configFilePath);
+      if (configFile.exists()) {
+        return configFile;
+      }
+
+      for (Step stepFound : script.getSteps()) {
         configuration.putAll(createInput(stepFound));
       }
       return createConfigFile(configuration);
@@ -85,9 +100,7 @@ public class LauncherManager {
       final ConsolePrompt prompt =
           Optional.ofNullable(launcherConfig.customConsolePrompt()).orElse(new ConsolePrompt());
       final PromptBuilder promptBuilder = prompt.getPromptBuilder();
-      if (step.isConfigFileLocation()) {
-        configFileKey = step.getConfigKey();
-      }
+
       switch (step.getPromptType()) {
         case LIST:
           additionalFlag.putAll(step.getAdditionalFlag());
@@ -205,7 +218,6 @@ public class LauncherManager {
       throws LauncherException {
     final StringBuilder config = new StringBuilder();
 
-    String dataDir = null;
     for (Map.Entry<String, ? extends PromtResultItemIF> entry : configuration.entrySet()) {
       String key = entry.getKey();
       PromtResultItemIF value = entry.getValue();
@@ -216,9 +228,6 @@ public class LauncherManager {
       } else if (value instanceof InputResult) {
         String input = ((InputResult) value).getInput();
         config.append(String.format("%s=\"%s\"%n", key, input));
-        if (key.equals(configFileKey)) {
-          dataDir = input;
-        }
       } else if (value instanceof CheckboxResult) {
         config.append(
             String.format(
@@ -237,10 +246,7 @@ public class LauncherManager {
         config.append(String.format("%s=\"%s\"%n", key, selectedItem.toUpperCase()));
       }
     }
-    if (dataDir == null) {
-      throw new LauncherException("invalid launcher script : missing config file location");
-    }
-    final File file = new File(dataDir + File.separator + launcherConfig.configFileName());
+    final File file = new File(configFilePath);
     try (final PrintWriter out = new PrintWriter(file, StandardCharsets.UTF_8)) {
       out.print(config.toString());
     } catch (Exception e) {

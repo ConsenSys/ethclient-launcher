@@ -14,25 +14,10 @@
  */
 package net.consensys.ethclient.launcher.command;
 
-import net.consensys.ethclient.launcher.LauncherManager;
-import net.consensys.ethclient.launcher.LauncherManagerTest;
-import net.consensys.ethclient.launcher.config.ImmutableLauncherConfig;
-import net.consensys.ethclient.launcher.exception.LauncherException;
 import net.consensys.ethclient.launcher.network.NetworkName;
 import picocli.CommandLine;
 
 public class CommandClassTest {
-
-  public static void main(String[] args) throws LauncherException {
-    ImmutableLauncherConfig immutableLauncherConfig =
-        ImmutableLauncherConfig.builder()
-            .configFileName("config.toml")
-            .launcherScript(LauncherManagerTest.class.getResourceAsStream("launcher.json"))
-            .addCommandClasses(new CommandClassTest())
-            .build();
-    final LauncherManager launcherManager = new LauncherManager(immutableLauncherConfig);
-    launcherManager.run();
-  }
 
   @CommandLine.Option(
       names = {"--data-path"},

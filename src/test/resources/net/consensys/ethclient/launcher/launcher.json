@@ -1,48 +1,50 @@
-[
-  {
-    "prompt-type":"LIST",
-    "question":"Which network would you like to use ?",
-    "config-key":"network",
-    "available-options":"net.consensys.ethclient.launcher.network.NetworkName",
-    "additional-flag":{
-      "mainnet":"Xadd-enabled"
-    }
-  },
-  {
-    "prompt-type":"CONFIRM",
-    "question":"Do you want to enable the service ?",
-    "config-key":"rpc-http-enabled",
-    "default-option":"no",
-    "sub-questions":[
-      {
-        "prompt-type":"CONFIRM",
-        "question":"Do you want to configure ?",
-        "default-option":"yes",
-        "sub-questions":[
-          {
-            "prompt-type":"INPUT",
-            "question":"What is the host address ?",
-            "config-key":"rpc-http-host"
-          },
-          {
-            "prompt-type":"INPUT",
-            "question":"What is the port ?",
-            "config-key":"rpc-http-port"
-          },
-          {
-            "prompt-type":"CHECKBOX",
-            "question":"Select the list of APIs",
-            "config-key":"rpc-http-apis",
-            "available-options":"net.consensys.ethclient.launcher.network.Apis$ALL_APIS"
-          }
-        ]
+{
+  "config-file-name": "config.toml",
+  "steps": [
+    {
+      "prompt-type": "LIST",
+      "question": "Which network would you like to use ?",
+      "config-key": "network",
+      "available-options": "net.consensys.ethclient.launcher.network.NetworkName",
+      "additional-flag": {
+        "mainnet": "Xadd-enabled"
       }
-    ]
-  },
-  {
-    "prompt-type":"INPUT",
-    "question":"What is the data directory ?",
-    "config-key":"data-path",
-    "is-config-file-location":true
-  }
-]
+    },
+    {
+      "prompt-type": "CONFIRM",
+      "question": "Do you want to enable the service ?",
+      "config-key": "rpc-http-enabled",
+      "default-option": "no",
+      "sub-questions": [
+        {
+          "prompt-type": "CONFIRM",
+          "question": "Do you want to configure ?",
+          "default-option": "yes",
+          "sub-questions": [
+            {
+              "prompt-type": "INPUT",
+              "question": "What is the host address ?",
+              "config-key": "rpc-http-host"
+            },
+            {
+              "prompt-type": "INPUT",
+              "question": "What is the port ?",
+              "config-key": "rpc-http-port"
+            },
+            {
+              "prompt-type": "CHECKBOX",
+              "question": "Select the list of APIs",
+              "config-key": "rpc-http-apis",
+              "available-options": "net.consensys.ethclient.launcher.network.Apis$ALL_APIS"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prompt-type": "INPUT",
+      "question": "What is the data directory ?",
+      "config-key": "data-path"
+    }
+  ]
+}

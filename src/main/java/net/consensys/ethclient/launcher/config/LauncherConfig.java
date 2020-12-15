@@ -23,8 +23,6 @@ import org.immutables.value.Value;
 @Value.Immutable
 public interface LauncherConfig {
 
-  String configFileName();
-
   InputStream launcherScript();
 
   List<Object> commandClasses();
