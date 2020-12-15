@@ -5,7 +5,7 @@
 
 ## Description
 
-Ethereum client launcher
+This library makes it easy to create a config file for an ethereum client at startup. Through different questions the configuration file will be created.
 
 ## Installation
 
@@ -77,7 +77,7 @@ Select the list of APIs to enable on JSON-RPC HTTP service
 final File configFileCreated = new LauncherManager(launcherConfig).run();
 ```
 
-Then the config file is create
+Then the config file is created
 
 ## Code Style
 
