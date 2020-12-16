@@ -12,7 +12,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package net.consensys.ethclient.launcher;
+package net.consensys.quorum.mainnet.launcher;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,13 +35,13 @@ import de.codeshelf.consoleui.prompt.CheckboxResult;
 import de.codeshelf.consoleui.prompt.ConfirmResult;
 import de.codeshelf.consoleui.prompt.InputResult;
 import de.codeshelf.consoleui.prompt.ListResult;
-import net.consensys.ethclient.launcher.command.CommandClassTest;
-import net.consensys.ethclient.launcher.config.ImmutableLauncherConfig;
-import net.consensys.ethclient.launcher.exception.LauncherException;
-import net.consensys.ethclient.launcher.network.Apis;
-import net.consensys.ethclient.launcher.network.NetworkName;
-import net.consensys.ethclient.launcher.util.IdGenerator;
-import net.consensys.ethclient.launcher.util.TestPrompt;
+import net.consensys.quorum.mainnet.launcher.command.CommandClassTest;
+import net.consensys.quorum.mainnet.launcher.config.ImmutableLauncherConfig;
+import net.consensys.quorum.mainnet.launcher.exception.LauncherException;
+import net.consensys.quorum.mainnet.launcher.network.Apis;
+import net.consensys.quorum.mainnet.launcher.network.NetworkName;
+import net.consensys.quorum.mainnet.launcher.util.IdGenerator;
+import net.consensys.quorum.mainnet.launcher.util.TestPrompt;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.BeforeClass;
 import org.junit.Rule;

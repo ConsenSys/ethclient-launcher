@@ -1,7 +1,7 @@
-[![ethclient-launcher Actions Status](https://github.com/ConsenSys/ethclient-launcher/workflows/ethclient-launcher-ci/badge.svg)](https://github.com/ConsenSys/ethclient-launcher/actions)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/ConsenSys/ethclient-launcher/blob/master/LICENSE)
+[![quorum-mainnet-launcher Actions Status](https://github.com/ConsenSys/quorum-mainnet-launcher/workflows/quorum-mainnet-launcher-ci/badge.svg)](https://github.com/ConsenSys/quorum-mainnet-launcher/actions)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/ConsenSys/quorum-mainnet-launcher/blob/master/LICENSE)
 [![sonar-quality-gate][sonar-quality-gate]][sonar-url] [![sonar-coverage][sonar-coverage]][sonar-url] [![sonar-bugs][sonar-bugs]][sonar-url] [![sonar-vulnerabilities][sonar-vulnerabilities]][sonar-url]
-# Ethclient launcher
+# Quorum mainnet client configuration generator
 
 ## Description
 
@@ -23,11 +23,11 @@ This library makes it easy to create a config file for an ethereum client at sta
 
 #### 1) Create script
 
-There is a sample here : https://github.com/ConsenSys/ethclient-launcher/blob/main/src/test/resources/net/consensys/ethclient/launcher/launcher.json
+There is a sample here : https://github.com/ConsenSys/quorum-mainnet-launcher/blob/main/src/test/resources/net/consensys/quorum/mainnet/launcher/launcher.json
 
 There are severals kinds of `prompt` :
 
-- LIST 
+- List 
 
 ```
 Which Ethereum network would you like to use ?
@@ -37,19 +37,25 @@ Which Ethereum network would you like to use ?
     goerli
 ```
 
-- CONFIRM
+You can populate your list directly from a class 
+
+```json
+"available-options": "net.consensys.quorum.mainnet.launcher.network.NetworkName"
+```
+
+- Confirm
 
 ```
 Do you want to enable pruning? (y/N) yes
 ```
 
-- INPUT
+- Input
 
 ```
 What is the data directory ? (/besu)
 ```
 
-- CHECKBOX
+- Checkbox
 
 ```
 Select the list of APIs to enable on JSON-RPC HTTP service
@@ -78,6 +84,18 @@ final File configFileCreated = new LauncherManager(launcherConfig).run();
 ```
 
 Then the config file is created
+
+```toml
+pruning-enabled=true
+data-path="/besu"
+rpc-http-enabled=true
+rpc-http-apis=["ETH", "NET", "WEB3"]
+network="MAINNET"
+Xadd-enabled=true
+..
+```
+
+Once the config file is created you can continue starting the client without restarting
 
 ## Code Style
 

@@ -12,9 +12,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package net.consensys.ethclient.launcher.command;
+package net.consensys.quorum.mainnet.launcher.command;
 
-import net.consensys.ethclient.launcher.network.NetworkName;
+import net.consensys.quorum.mainnet.launcher.network.NetworkName;
 import picocli.CommandLine;
 
 public class CommandClassTest {

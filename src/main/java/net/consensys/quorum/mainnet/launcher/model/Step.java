@@ -12,7 +12,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package net.consensys.ethclient.launcher.model;
+package net.consensys.quorum.mainnet.launcher.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;

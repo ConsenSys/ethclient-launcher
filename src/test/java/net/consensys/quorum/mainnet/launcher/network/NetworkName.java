@@ -12,11 +12,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package net.consensys.ethclient.launcher.exception;
+package net.consensys.quorum.mainnet.launcher.network;
 
-public class LauncherException extends Exception {
-
-  public LauncherException(final String message) {
-    super(message);
-  }
+public enum NetworkName {
+  MAINNET,
+  DEV
 }

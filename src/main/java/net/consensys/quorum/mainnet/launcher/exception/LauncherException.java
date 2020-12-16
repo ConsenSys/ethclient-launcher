@@ -12,11 +12,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package net.consensys.ethclient.launcher.model;
+package net.consensys.quorum.mainnet.launcher.exception;
 
-public enum InputType {
-  LIST,
-  INPUT,
-  CONFIRM,
-  CHECKBOX
+public class LauncherException extends Exception {
+
+  public LauncherException(final String message) {
+    super(message);
+  }
 }

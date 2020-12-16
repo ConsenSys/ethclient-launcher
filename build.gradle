@@ -124,7 +124,7 @@ def pomConfig = {
   }
 
   scm {
-    url "https://github.com/ConsenSys/ethclient-launcher"
+    url "https://github.com/ConsenSys/quorum-mainnet-launcher"
   }
 }
 
@@ -143,12 +143,12 @@ publishing {
           fromResolutionResult()
         }
       }
-      artifactId 'ethclient-launcher'
+      artifactId 'quorum-mainnet-launcher'
       pom.withXml {
         def root = asNode()
-        root.appendNode('description', 'Ethereum client launcher')
-        root.appendNode('name', 'ethclient-launcher')
-        root.appendNode('url', 'https://github.com/ConsenSys/ethclient-launcher')
+        root.appendNode('description', 'Quorum mainnet client configuration generator')
+        root.appendNode('name', 'quorum-mainnet-launcher')
+        root.appendNode('url', 'https://github.com/ConsenSys/quorum-mainnet-launcher')
         root.children().last() + pomConfig
       }
     }
@@ -159,13 +159,13 @@ def bintrayUser = project.hasProperty('bintrayUser') ? project.property('bintray
 def bintrayKey = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_KEY')
 def bintrayPackage = bintray.pkg {
   repo = 'consensys'
-  name = 'ethclient-launcher'
+  name = 'quorum-mainnet-launcher'
   userOrg = 'consensys'
   desc = "Ethereum client launcher"
   licenses = ['Apache-2.0']
-  websiteUrl = 'https://github.com/ConsenSys/ethclient-launcher'
-  issueTrackerUrl = 'https://github.com/ConsenSys/ethclient-launcher/issues'
-  vcsUrl = 'https://github.com/ConsenSys/ethclient-launcher.git'
+  websiteUrl = 'https://github.com/ConsenSys/quorum-mainnet-launcher'
+  issueTrackerUrl = 'https://github.com/ConsenSys/quorum-mainnet-launcher/issues'
+  vcsUrl = 'https://github.com/ConsenSys/quorum-mainnet-launcher.git'
   version {
     name = project.version
     released = new Date()

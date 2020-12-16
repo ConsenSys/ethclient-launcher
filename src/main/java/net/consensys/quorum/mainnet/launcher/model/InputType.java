@@ -12,27 +12,11 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package net.consensys.ethclient.launcher.network;
+package net.consensys.quorum.mainnet.launcher.model;
 
-import java.util.Arrays;
-import java.util.List;
-
-public class Apis {
-
-  public static final Api ETH = new Api("ETH");
-  public static final Api DEBUG = new Api("DEBUG");
-
-  public static final List<Api> ALL_APIS = Arrays.asList(ETH, DEBUG);
-
-  public static class Api {
-    private final String value;
-
-    public Api(final String cliValue) {
-      this.value = cliValue;
-    }
-
-    public String getValue() {
-      return value;
-    }
-  }
+public enum InputType {
+  LIST,
+  INPUT,
+  CONFIRM,
+  CHECKBOX
 }

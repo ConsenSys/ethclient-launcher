@@ -1,4 +1,4 @@
-package net.consensys.ethclient.launcher.model;
+package net.consensys.quorum.mainnet.launcher.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

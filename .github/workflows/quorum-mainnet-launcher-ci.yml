@@ -1,4 +1,4 @@
-name: ethclient-launcher-ci
+name: quorum-mainnet-launcher-ci
 
 on: [push, pull_request]
 

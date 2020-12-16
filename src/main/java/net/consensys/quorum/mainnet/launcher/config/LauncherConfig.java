@@ -12,7 +12,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package net.consensys.ethclient.launcher.config;
+package net.consensys.quorum.mainnet.launcher.config;
 
 import java.io.InputStream;
 import java.util.List;
