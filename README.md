@@ -19,6 +19,17 @@ This library makes it easy to create a config file for an ethereum client at sta
 ./gradlew assemble
 ```
 
+### Import dependency
+
+```groovy
+repositories {
+    maven { url "https://consensys.bintray.com/pegasys-repo" }
+}
+```
+```groovy
+  implementation 'net.consensys.services:quorum-mainnet-launcher:X.X.X'
+```
+
 ### How to use 
 
 #### 1) Create script
@@ -37,11 +48,12 @@ Which Ethereum network would you like to use ?
     goerli
 ```
 
-You can populate your list directly from a class 
+**NB : You can populate your list directly from a class**
 
 ```json
 "available-options": "net.consensys.quorum.mainnet.launcher.network.NetworkName"
 ```
+
 
 - Confirm
 
@@ -54,6 +66,16 @@ Do you want to enable pruning? (y/N) yes
 ```
 What is the data directory ? (/besu)
 ```
+
+**NB : it will automatically propose, for all prompts, the default value set thanks to Picocli**
+
+```java
+@CommandLine.Option(
+      names = {"--data-path"},
+      description = "The path to data directory (default: ${DEFAULT-VALUE})")
+private final String dataPath = "/besu";
+```
+
 
 - Checkbox
 
@@ -92,7 +114,6 @@ rpc-http-enabled=true
 rpc-http-apis=["ETH", "NET", "WEB3"]
 network="MAINNET"
 Xadd-enabled=true
-..
 ```
 
 Once the config file is created you can continue starting the client without restarting
