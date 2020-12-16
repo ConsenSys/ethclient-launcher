@@ -29,7 +29,8 @@
             {
               "prompt-type": "INPUT",
               "question": "What is the port ?",
-              "config-key": "rpc-http-port"
+              "config-key": "rpc-http-port",
+              "regex": "[0-9]+"
             },
             {
               "prompt-type": "CHECKBOX",

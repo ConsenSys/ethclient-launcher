@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -100,18 +101,16 @@ public class LauncherManager {
     try {
       final ConsolePrompt prompt =
           Optional.ofNullable(launcherConfig.customConsolePrompt()).orElse(new ConsolePrompt());
-      final PromptBuilder promptBuilder = prompt.getPromptBuilder();
-
       switch (step.getPromptType()) {
         case LIST:
           additionalFlag.putAll(step.getAdditionalFlag());
-          return processList(prompt, promptBuilder, step);
+          return processList(prompt, step);
         case CHECKBOX:
-          return processCheckbox(prompt, promptBuilder, step);
+          return processCheckbox(prompt, step);
         case INPUT:
-          return processInput(prompt, promptBuilder, step);
+          return processInput(prompt, step);
         case CONFIRM:
-          return processConfirm(prompt, promptBuilder, step);
+          return processConfirm(prompt, step);
         default:
           throw new LauncherException("invalid input type");
       }
@@ -121,16 +120,18 @@ public class LauncherManager {
   }
 
   @SuppressWarnings("unchecked")
-  private Map<String, PromtResultItemIF> processList(
-      final ConsolePrompt prompt, final PromptBuilder promptBuilder, final Step step)
+  private Map<String, PromtResultItemIF> processList(final ConsolePrompt prompt, final Step step)
       throws LauncherException {
+    final PromptBuilder promptBuilder = prompt.getPromptBuilder();
     final ListPromptBuilder list = promptBuilder.createListPrompt();
     list.name(step.getConfigKey()).message(step.getQuestion());
     try {
       formatOptions(step)
           .forEach(value -> list.newItem().text(value.toString().toLowerCase()).add());
       list.addPrompt();
-      return (Map<String, PromtResultItemIF>) prompt.prompt(promptBuilder.build());
+      final Map<String, PromtResultItemIF> prompt1 =
+          (Map<String, PromtResultItemIF>) prompt.prompt(promptBuilder.build());
+      return prompt1;
     } catch (Exception e) {
       throw new LauncherException("invalid default option for " + step.getConfigKey());
     }
@@ -138,8 +139,8 @@ public class LauncherManager {
 
   @SuppressWarnings("unchecked")
   private Map<String, PromtResultItemIF> processCheckbox(
-      final ConsolePrompt prompt, final PromptBuilder promptBuilder, final Step step)
-      throws LauncherException, IOException {
+      final ConsolePrompt prompt, final Step step) throws LauncherException, IOException {
+    final PromptBuilder promptBuilder = prompt.getPromptBuilder();
     final CheckboxPromptBuilder checkbox = promptBuilder.createCheckboxPrompt();
     checkbox.name(step.getConfigKey()).message(step.getQuestion());
     formatOptions(step)
@@ -157,18 +158,28 @@ public class LauncherManager {
   }
 
   @SuppressWarnings("unchecked")
-  private Map<String, PromtResultItemIF> processInput(
-      final ConsolePrompt prompt, final PromptBuilder promptBuilder, final Step step)
+  private Map<String, PromtResultItemIF> processInput(final ConsolePrompt prompt, final Step step)
       throws IOException {
-    final InputValueBuilder inputPrompt = promptBuilder.createInputPrompt();
-    setDefaultValue(step.getConfigKey(), inputPrompt);
-    inputPrompt.name(step.getConfigKey()).message(step.getQuestion()).addPrompt();
-    return (Map<String, PromtResultItemIF>) prompt.prompt(promptBuilder.build());
+    boolean isValidResponse = true;
+    Map<String, PromtResultItemIF> response;
+    do {
+      final PromptBuilder promptBuilder = prompt.getPromptBuilder();
+      final InputValueBuilder inputPrompt = promptBuilder.createInputPrompt();
+      setDefaultValue(step.getConfigKey(), inputPrompt);
+      inputPrompt.name(step.getConfigKey()).message(step.getQuestion()).addPrompt();
+      response = (Map<String, PromtResultItemIF>) prompt.prompt(promptBuilder.build());
+      if (!Strings.isNullOrEmpty(step.getRegex())) {
+        final Pattern pattern = Pattern.compile(step.getRegex());
+        isValidResponse =
+            pattern.matcher(((InputResult) response.get(step.getConfigKey())).getInput()).find();
+      }
+    } while (!isValidResponse);
+    return response;
   }
 
-  private Map<String, PromtResultItemIF> processConfirm(
-      final ConsolePrompt prompt, final PromptBuilder promptBuilder, final Step step)
+  private Map<String, PromtResultItemIF> processConfirm(final ConsolePrompt prompt, final Step step)
       throws IOException, LauncherException {
+    final PromptBuilder promptBuilder = prompt.getPromptBuilder();
     final Map<String, PromtResultItemIF> configuration = new HashMap<>();
     final String name = Optional.ofNullable(step.getConfigKey()).orElse(IdGenerator.generateID());
     promptBuilder

@@ -12,25 +12,20 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-package net.consensys.quorum.mainnet.launcher.model;
+package net.consensys.quorum.mainnet.launcher.util;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import net.consensys.quorum.mainnet.launcher.options.Options;
+import picocli.CommandLine;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class LauncherScript {
+public final class ParseArgsHelper {
 
-  @JsonProperty("config-file-name")
-  private String configFileName;
-
-  @JsonProperty("steps")
-  private Step[] steps;
-
-  public String getConfigFileName() {
-    return configFileName;
-  }
-
-  public Step[] getSteps() {
-    return steps;
+  public static Options getLauncherOptions(final Options launcherOptions, final String... args) {
+    final CommandLine commandLine = new CommandLine(launcherOptions);
+    try {
+      commandLine.parseArgs(args);
+    } catch (CommandLine.UnmatchedArgumentException e) {
+      // ignore
+    }
+    return launcherOptions;
   }
 }

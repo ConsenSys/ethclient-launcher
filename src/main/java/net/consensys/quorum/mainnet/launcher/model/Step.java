@@ -35,6 +35,9 @@ public class Step {
   @JsonProperty("config-key")
   private String configKey;
 
+  @JsonProperty("regex")
+  private String regex;
+
   @JsonProperty("available-options")
   private String availableOptions;
 
@@ -60,6 +63,10 @@ public class Step {
 
   public String getConfigKey() {
     return configKey;
+  }
+
+  public String getRegex() {
+    return regex;
   }
 
   public String getAvailableOptions() {
