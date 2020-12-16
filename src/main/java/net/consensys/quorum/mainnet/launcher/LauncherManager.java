@@ -83,7 +83,7 @@ public class LauncherManager {
 
       // config file already exist
       final File configFile = new File(configFilePath);
-      if (configFile.exists()) {
+      if (!launcherConfig.isLauncherForced() && configFile.exists()) {
         return configFile;
       }
 

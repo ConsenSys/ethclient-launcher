@@ -23,11 +23,11 @@ This library makes it easy to create a config file for an ethereum client at sta
 
 ```groovy
 repositories {
-    maven { url "https://consensys.bintray.com/pegasys-repo" }
+    maven { url "https://consensys.bintray.com/consensys" }
 }
 ```
 ```groovy
-  implementation 'net.consensys.services:quorum-mainnet-launcher:X.X.X'
+implementation 'net.consensys.services:quorum-mainnet-launcher:X.X.X'
 ```
 
 ### How to use 

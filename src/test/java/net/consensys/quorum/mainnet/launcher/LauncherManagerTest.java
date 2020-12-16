@@ -115,6 +115,31 @@ public class LauncherManagerTest {
   }
 
   @Test
+  public void shouldCreateConfigFileIfAlreadyCreatedAndForced()
+      throws LauncherException, IOException, URISyntaxException {
+
+    final ArrayDeque mockedResult = new ArrayDeque();
+    mockedResult.offer(Pair.of("network", new ListResult(NetworkName.MAINNET.name())));
+    mockedResult.offer(
+        Pair.of("rpc-http-enabled", new ConfirmResult(ConfirmChoice.ConfirmationValue.NO)));
+    mockedResult.offer(Pair.of("data-path", new InputResult(folder.getRoot().getAbsolutePath())));
+
+    final ImmutableLauncherConfig immutableLauncherConfig =
+        ImmutableLauncherConfig.builder()
+            .launcherScript(prepareScript("launcher.json"))
+            .addCommandClasses(new CommandClassTest())
+            .isLauncherForced(true)
+            .customConsolePrompt(new TestPrompt(mockedResult))
+            .build();
+    final LauncherManager launcherManager = new LauncherManager(immutableLauncherConfig);
+
+    final File config = launcherManager.run();
+
+    assertThat(config.getAbsolutePath())
+        .isEqualTo(folder.getRoot().getAbsolutePath() + File.separator + CONFIG_FILE_NAME);
+  }
+
+  @Test
   public void shouldCreateValidContentForConfigFile() throws LauncherException, IOException {
 
     final ArrayDeque mockedResult = new ArrayDeque();

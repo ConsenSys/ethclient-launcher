@@ -28,6 +28,11 @@ public interface LauncherConfig {
 
   List<Object> commandClasses();
 
+  @Value.Default
+  default boolean isLauncherForced() {
+    return false;
+  }
+
   @Nullable
   ConsolePrompt customConsolePrompt();
 }
