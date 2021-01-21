@@ -160,18 +160,21 @@ public class LauncherManager {
   @SuppressWarnings("unchecked")
   private Map<String, PromtResultItemIF> processInput(final ConsolePrompt prompt, final Step step)
       throws IOException {
-    boolean isValidResponse = true;
     Map<String, PromtResultItemIF> response;
+    boolean isValidResponse;
     do {
+      isValidResponse = true;
       final PromptBuilder promptBuilder = prompt.getPromptBuilder();
       final InputValueBuilder inputPrompt = promptBuilder.createInputPrompt();
       setDefaultValue(step.getConfigKey(), inputPrompt);
       inputPrompt.name(step.getConfigKey()).message(step.getQuestion()).addPrompt();
       response = (Map<String, PromtResultItemIF>) prompt.prompt(promptBuilder.build());
-      if (!Strings.isNullOrEmpty(step.getRegex())) {
+      final String input = ((InputResult) response.get(step.getConfigKey())).getInput();
+      if (Strings.isNullOrEmpty(input)) {
+        isValidResponse = false;
+      } else if (!Strings.isNullOrEmpty(step.getRegex())) {
         final Pattern pattern = Pattern.compile(step.getRegex());
-        isValidResponse =
-            pattern.matcher(((InputResult) response.get(step.getConfigKey())).getInput()).find();
+        isValidResponse = pattern.matcher(input).find();
       }
     } while (!isValidResponse);
     return response;
