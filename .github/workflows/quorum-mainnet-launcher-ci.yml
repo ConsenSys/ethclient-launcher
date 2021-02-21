@@ -41,9 +41,9 @@ jobs:
       - name: Test with Gradle
         run: ./gradlew test
 
-  publish-bintray:
+  publish-cloudsmith:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    name: Publish bintray
+    name: Publish cloudsmith
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -57,11 +57,13 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
+      - name: Install Python3
+          run:  sudo apt update & sudo apt install python3 python3-pip python3-venv
       - name: Upload
-        env:
-          BINTRAY_USER: ${{ secrets.BINTRAY_USER }}  # Needed to get PR information, if any
-          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
-        run: ./gradlew assemble bintrayUpload
+          env:
+            CLOUDSMITH_USER: ${{ secrets.CLOUDSMITH_USER }}
+            CLOUDSMITH_API_KEY: ${{ secrets.CLOUDSMITH_API_KEY }}
+          run: ./gradlew assemble cloudsmithUpload
 
   sonar:
     name: Sonar

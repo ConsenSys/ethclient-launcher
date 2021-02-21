@@ -21,7 +21,6 @@ plugins {
   id 'com.diffplug.gradle.spotless' version '3.25.0'
   id "org.sonarqube" version "3.0"
   id 'jacoco'
-  id 'com.jfrog.bintray' version '1.8.4'
   id "maven-publish"
 }
 
@@ -32,7 +31,6 @@ sourceCompatibility = '11'
 apply plugin: 'com.diffplug.gradle.spotless'
 apply plugin: 'io.spring.dependency-management'
 apply from: "${rootDir}/gradle/versions.gradle"
-apply plugin: 'com.jfrog.bintray'
 
 sonarqube {
   properties {
@@ -128,7 +126,21 @@ def pomConfig = {
   }
 }
 
+def cloudsmithUser = project.hasProperty('cloudsmithUser') ? project.property('cloudsmithUser') : System.getenv('CLOUDSMITH_USER')
+def cloudsmithKey = project.hasProperty('cloudsmithApiKey') ? project.property('cloudsmithApiKey') : System.getenv('CLOUDSMITH_API_KEY')
+
+
 publishing {
+  repositories {
+    maven {
+      name = "cloudsmith"
+      url = "https://api-g.cloudsmith.io/maven/consensys/quorum-mainnet-launcher/"
+      credentials {
+        username = cloudsmithUser
+        password = cloudsmithKey
+      }
+    }
+  }
   publications {
     mavenPublication(MavenPublication) {
       from components.java
@@ -143,7 +155,24 @@ publishing {
           fromResolutionResult()
         }
       }
+      groupId 'net.consensys.services'
+      version "${project.version}"
       artifactId 'quorum-mainnet-launcher'
+      pom {
+        name = "Quorum mainnet launcher - ${project.name}"
+        url = 'https://github.com/ConsenSys/quorum-mainnet-launcher'
+        licenses {
+          license {
+            name = 'The Apache License, Version 2.0'
+            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+          }
+        }
+        scm {
+          connection = 'scm:git:git://github.com/ConsenSys/quorum-mainnet-launcher.git'
+          developerConnection = 'https://github.com/ConsenSys/quorum-mainnet-launcher.git'
+          url = 'https://github.com/ConsenSys/quorum-mainnet-launcher'
+        }
+      }
       pom.withXml {
         def root = asNode()
         root.appendNode('description', 'Quorum mainnet client configuration generator')
@@ -155,32 +184,14 @@ publishing {
   }
 }
 
-def bintrayUser = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
-def bintrayKey = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_KEY')
-def bintrayPackage = bintray.pkg {
-  repo = 'consensys'
-  name = 'quorum-mainnet-launcher'
-  userOrg = 'consensys'
-  desc = "Quorum mainnet client configuration generator"
-  licenses = ['Apache-2.0']
-  websiteUrl = 'https://github.com/ConsenSys/quorum-mainnet-launcher'
-  issueTrackerUrl = 'https://github.com/ConsenSys/quorum-mainnet-launcher/issues'
-  vcsUrl = 'https://github.com/ConsenSys/quorum-mainnet-launcher.git'
-  version {
-    name = project.version
-    released = new Date()
+
+task cloudsmithUpload {
+  doLast {
+    exec {
+      executable project.file("scripts/cloudsmith-upload.sh")
+      args rootProject.version, "build/libs/quorum-mainnet-launcher-${rootProject.version}.jar", "build/publications/mavenPublication/pom-default.xml"
+    }
   }
 }
 
-bintray {
-  user = bintrayUser
-  key = bintrayKey
-  publications = ['mavenPublication']
-  override = true
-  publish = true
-
-  pkg = bintrayPackage
-}
-
-bintrayUpload.dependsOn assemble
 apply plugin: 'groovy'
