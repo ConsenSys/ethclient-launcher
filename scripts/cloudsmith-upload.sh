@@ -15,4 +15,4 @@ fi
 
 python3 -m pip install --upgrade cloudsmith-cli
 
-cloudsmith push maven consensys/quorum-mainnet-launcher "${JAR}" --pom-file="${POM}"
+cloudsmith push maven consensys/quorum-mainnet-launcher "${JAR}" --pom-file="${POM}" --version "1.0.1"

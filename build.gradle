@@ -17,7 +17,7 @@
 plugins {
   // Apply the java-library plugin to add support for Java Library
   id 'java-library'
-  id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+  id 'io.spring.dependency-management' version '1.0.11.RELEASE'
   id 'com.diffplug.gradle.spotless' version '3.25.0'
   id "org.sonarqube" version "3.0"
   id 'jacoco'
@@ -25,7 +25,7 @@ plugins {
 }
 
 group = 'net.consensys.services'
-version = '1.0.1'
+version = '1.0.2-SNAPSHOT'
 sourceCompatibility = '11'
 
 apply plugin: 'com.diffplug.gradle.spotless'
@@ -156,23 +156,8 @@ publishing {
         }
       }
       groupId 'net.consensys.services'
-      version "${project.version}"
+      version "${rootProject.version}"
       artifactId 'quorum-mainnet-launcher'
-      pom {
-        name = "Quorum mainnet launcher - ${project.name}"
-        url = 'https://github.com/ConsenSys/quorum-mainnet-launcher'
-        licenses {
-          license {
-            name = 'The Apache License, Version 2.0'
-            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-          }
-        }
-        scm {
-          connection = 'scm:git:git://github.com/ConsenSys/quorum-mainnet-launcher.git'
-          developerConnection = 'https://github.com/ConsenSys/quorum-mainnet-launcher.git'
-          url = 'https://github.com/ConsenSys/quorum-mainnet-launcher'
-        }
-      }
       pom.withXml {
         def root = asNode()
         root.appendNode('description', 'Quorum mainnet client configuration generator')
