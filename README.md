@@ -23,7 +23,7 @@ This library makes it easy to create a config file for an ethereum client at sta
 
 ```groovy
 repositories {
-    maven { url "https://consensys.bintray.com/consensys" }
+    maven { url "https://dl.cloudsmith.io/public/consensys/quorum-mainnet-launcher/maven/"}
 }
 ```
 ```groovy
